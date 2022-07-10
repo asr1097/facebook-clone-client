@@ -1,25 +1,27 @@
-import { useState, useEffect, useContext } from "react";
-import { SocketContext } from "../App";
+import { useState, useContext } from "react";
+import { SocketContext, UserContext } from "../App";
 
-const SendMessage = () => {
+const SendMessage = ({ activeRoom }) => {
 
     const [text, setText] = useState();
 
     const socket = useContext(SocketContext);
+    const user = useContext(UserContext);
 
     const sendMessage = (ev) => {
         ev.preventDefault();
+        let target = ev.target;
         socket.emit("message", {
-            text,
-            to: "Karim"
+            content: {
+                text,
+                
+                date: Date.now()
+            },
+            to: activeRoom,
+            from: user._id
         })
-        setText();
-        ev.target.value = ""; 
+        target.value = ""; 
     }
-
-    useEffect(() => {
-        if(socket.connected) {socket.emit("user joined", socket.id)}
-    }, [socket.connected])
 
     return (
         <form onSubmit={sendMessage}>

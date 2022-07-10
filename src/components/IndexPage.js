@@ -30,7 +30,7 @@ const IndexPage = (props) => {
                         <p>{comment.date}</p>
                         </div>)}
                     )}
-                    {post.image ? <img src={"https://localhost:3000/images/" + post.image}></img> : null}
+                    {post.image ? <img alt="Post" src={"https://localhost:3000/images/" + post.image}></img> : null}
                     <hr />
                 </div>
                 )})
