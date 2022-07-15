@@ -6,6 +6,7 @@ import { SearchBar } from "./components/SearchBar";
 import { IndexPage } from "./components/IndexPage";
 import { SearchResults } from "./components/SearchResults";
 import { ChatWindow } from "./components/ChatWindow";
+import { Notifications } from "./components/Notifications";
 
 
 const socket = io("https://localhost:3000/", {
@@ -26,8 +27,9 @@ function App() {
   const [messages, setMessages] = useState({});
   const [activeRoom, setActiveRoom] = useState();
 
-  const readMessages = (friend, msgArray=[]) => {
+  const [notifications, setNotifications] = useState([]);
 
+  const readMessages = (friend, msgArray=[]) => {
      /* 
       If the chatroom is already active when message from friend is received,
       "msgArray" is passed from socketIO event handler so the received message
@@ -75,6 +77,21 @@ function App() {
     } else {return 0};
   };
 
+  /* Fetch notifications */
+  useEffect(() => {
+    const fetchNotifications = async() => {
+      const fetchedNotifsData = await fetch("https://localhost:3000/notifications", {
+        credentials: "include",
+        mode: "cors"
+      })
+      const fetchedNotifs = await fetchedNotifsData.json();
+      setNotifications(fetchedNotifs);
+    };
+
+    if(user && loggedIn) {fetchNotifications()}
+
+  }, [user, loggedIn])
+
   useEffect(() => {
     let cookies = document.cookie.split(";");
     cookies.some(cookie => {
@@ -83,6 +100,7 @@ function App() {
     })
   }, [])
 
+  /* Fetch messages */
   useEffect(() => {
 
     const fetchMessages = async() => {
@@ -111,6 +129,7 @@ function App() {
 
   }, [user, loggedIn]);
 
+  /* Fetch user data */
   useEffect(() => {
     const fetchUser = async() => {
       const fetchedUserData = await fetch("https://localhost:3000/profile/loggedUser", {
@@ -126,7 +145,12 @@ function App() {
 
   }, [loggedIn, user, socketID])
 
+  /* SocketIO events handlers */
   useEffect(() => {
+
+    const onNotification = (notif) => {
+      
+    }
 
     const onMessage = (msg) => {
       let sender = msg.from;
@@ -175,6 +199,8 @@ function App() {
 
       socket.on("new message", onMessage);
 
+      socket.on("new notification", onNotification);
+
       socket.on("user disconnected", _user => {
         if(activeUsers.includes(_user)) {
           let newActiveUsers = [];
@@ -192,6 +218,7 @@ function App() {
       socket.off("new connection");
       socket.off("new message");
       socket.off("user disconnected");
+      socket.off("new notification");
     }
   }, [loggedIn, socketID, activeUsers, user, messages]);
 
@@ -221,6 +248,10 @@ function App() {
           <Route 
             path="/facebook-clone-client/search" 
             element={<SearchResults users={searchResult}/>} 
+          />
+          <Route 
+            path="/facebook-clone-client/notifications"
+            element={<Notifications notifs={notifications}/>}
           />
         </Routes>
       </SocketContext.Provider>
