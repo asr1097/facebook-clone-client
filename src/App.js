@@ -28,6 +28,8 @@ function App() {
   const [activeRoom, setActiveRoom] = useState();
 
   const [notifications, setNotifications] = useState([]);
+  const [notifsActive, setNotifsActive] = useState(false);
+  const [unreadNotifsCount, setUnreadNotifsCount] = useState();
 
   const readMessages = (friend, msgArray=[]) => {
      /* 
@@ -68,6 +70,7 @@ function App() {
           if(msgArray.length){newMessages[friend] = [...newMessages[friend], msgArray[0]]}
           else {
             for(let i = newMessages[friend].length - 1; i >= 0; i--){
+              if(newMessages[friend][i].content.read) {break}
               newMessages[friend][i].content.read = true;
             }
           }
@@ -76,6 +79,49 @@ function App() {
       })
     } else {return 0};
   };
+
+  /* Fetch read notifications when "Notifications" component is active */
+  useEffect(() => {
+
+    const readNotifications = () => {
+      let readNotifsIDs = [];
+      for (let i = notifications.length - 1; i >= 0; i--) {
+        if(!notifications[i].read) {
+        
+          readNotifsIDs.push(notifications[i]._id)
+        }
+        else {break}
+      };
+      return readNotifsIDs;
+    };
+    
+    const fetchReadNotifs = async() => {
+      let notifs = readNotifications();
+      if(notifs.length) {
+        let formData = new FormData()
+        formData.append("notifs", notifs);
+        let statusCode = await fetch("https://localhost:3000/notifications/read", {
+          mode: "cors",
+          credentials: "include",
+          method: "post",
+          body: formData
+        })
+        if(statusCode === 200){
+          let newNotifications = [...notifications];
+          for (let i = notifs.length - 1; i >= 0; i--) {
+            newNotifications[i].read = true;
+          }
+          setNotifications(newNotifications);
+        }
+      } else{return}
+    };
+
+    if(notifsActive) {
+      setUnreadNotifsCount(0)
+      fetchReadNotifs()
+    };
+
+  }, [notifsActive, notifications])
 
   /* Fetch notifications */
   useEffect(() => {
@@ -92,6 +138,18 @@ function App() {
 
   }, [user, loggedIn])
 
+  useEffect(() => {
+    let unreadNotifs = 0;
+      for (let i = notifications.length - 1; i >= 0; i--) {
+        if(!notifications[i].read) {
+          unreadNotifs++;
+        }
+        else {break}
+      };
+      setUnreadNotifsCount(unreadNotifs);
+    }, [notifications])
+
+  /* Check if user is logged in by checking cookies */
   useEffect(() => {
     let cookies = document.cookie.split(";");
     cookies.some(cookie => {
@@ -149,7 +207,9 @@ function App() {
   useEffect(() => {
 
     const onNotification = (notif) => {
-      
+      if(notifsActive){notif.read = true};
+      let newNotifications = [...notifications, notif];
+      setNotifications(newNotifications);
     }
 
     const onMessage = (msg) => {
@@ -228,15 +288,23 @@ function App() {
       <a href="https://localhost:3000/auth/facebook">Log in</a> :
       <a href="https://localhost:3000/logout">Log out</a>}
       <SearchBar setsearchResult={setsearchResult}/>
-      <Link to={"/facebook-clone-client/chat"}>
+      <Link to={"/chat"}>
         <button>Message</button>
+      </Link>
+      <Link to={"/notifications"}>
+        <button>Notifications {unreadNotifsCount}</button>
       </Link>
       <UserContext.Provider value={user}>
       <SocketContext.Provider value={socket}>
         <Routes>
-          <Route path="/facebook-clone-client" element={<IndexPage loggedIn={loggedIn}/>}/>
+          <Route path="/" 
+            element={<IndexPage 
+              loggedIn={loggedIn}
+              user={user}
+              />}
+            />
           <Route 
-            path="/facebook-clone-client/chat" 
+            path="/chat" 
             element={<ChatWindow 
               activeUsers={activeUsers}
               messages={messages}
@@ -246,12 +314,15 @@ function App() {
               />} 
           />
           <Route 
-            path="/facebook-clone-client/search" 
+            path="/search" 
             element={<SearchResults users={searchResult}/>} 
           />
           <Route 
-            path="/facebook-clone-client/notifications"
-            element={<Notifications notifs={notifications}/>}
+            path="/notifications"
+            element={<Notifications 
+              notifs={notifications}
+              setNotifsActive={setNotifsActive}
+              />}
           />
         </Routes>
       </SocketContext.Provider>

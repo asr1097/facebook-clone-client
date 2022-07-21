@@ -1,10 +1,24 @@
 import { useState, useEffect } from "react";
+import { Post } from "./Post";
+import { NewPost } from "./NewPost";
 
-const IndexPage = (props) => {
+const IndexPage = ({loggedIn, user}) => {
     const [data, setData] = useState();
 
+    const likePost = (index) => {
+        let newData = [...data];
+        newData[index].likes.push(user);
+        setData(newData);
+    }
+    const unlikePost = (index) => {
+        let newData = [...data];
+        let filteredPostLikes = newData[index].likes.filter(_user => _user._id !== user._id);
+        newData[index].likes = filteredPostLikes;
+        setData(newData);
+    }
+
     useEffect(() => {
-        if(props.loggedIn){
+        if(loggedIn){
           fetch("https://localhost:3000/", {
             credentials: "include",
             mode: "cors"  
@@ -13,28 +27,19 @@ const IndexPage = (props) => {
             .then(res => {setData(res.posts)})
             .catch(err => console.log(err))
         }
-    }, [props.loggedIn]);
+    }, [loggedIn]);
 
     return (
         <div>
-            {data ? data.map(post => {
-                return (
-                <div key={post._id}>
-                    <p>{post.user.name.full}</p>
-                    <p>{post.text}</p>
-                    <p>{post.date}</p>
-                    {post.comments.map(comment => {
-                        return (
-                        <div key={comment._id}>
-                        <p>{comment.text}</p>
-                        <p>{comment.date}</p>
-                        </div>)}
-                    )}
-                    {post.image ? <img alt="Post" src={"https://localhost:3000/images/" + post.image}></img> : null}
-                    <hr />
-                </div>
-                )})
-                : null}
+            <NewPost />
+            {data ? data.map((post, index) => <Post 
+                    key={post._id} 
+                    index={index} 
+                    post={post}
+                    likePost={likePost}
+                    unlikePost={unlikePost} 
+                />)
+            : null}
         </div>
     )
 }
