@@ -10,12 +10,19 @@ const IndexPage = ({loggedIn, user}) => {
         newData[index].likes.push(user);
         setData(newData);
     }
+
     const unlikePost = (index) => {
         let newData = [...data];
         let filteredPostLikes = newData[index].likes.filter(_user => _user._id !== user._id);
         newData[index].likes = filteredPostLikes;
         setData(newData);
     }
+
+    const pushNewComment = (index, comment) => {
+        let newData = [...data];
+        newData[index].comments.splice(0, 0, comment);
+        setData(newData);
+    };
 
     useEffect(() => {
         if(loggedIn){
@@ -37,7 +44,8 @@ const IndexPage = ({loggedIn, user}) => {
                     index={index} 
                     post={post}
                     likePost={likePost}
-                    unlikePost={unlikePost} 
+                    unlikePost={unlikePost}
+                    pushNewComment={pushNewComment} 
                 />)
             : null}
         </div>

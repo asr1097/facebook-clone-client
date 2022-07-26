@@ -1,0 +1,38 @@
+import { useState } from "react";
+
+const PostCommentForm = ({ postID, user, index, pushNewComment }) => {
+
+    const [text, setText] = useState();
+
+    const onTextChange = (ev) => {
+        setText(ev.target.value);
+    };
+
+    const fetchComment = async(ev) => {
+        ev.preventDefault();
+        let formData = new FormData();
+        formData.append("postID", postID);
+        formData.append("user", user);
+        formData.append("text", text);
+        let response = await fetch(`https://localhost:3000/posts/${postID}/comments/new`, {
+            mode: "cors",
+            credentials: "include",
+            method: "post",
+            body: formData
+        });
+        if(response.ok) {
+            let comment = await response.json();
+            console.log(comment)
+            pushNewComment(index, comment);
+        };
+    };
+
+    return (
+        <form onSubmit={fetchComment}>
+            <input type="text" maxLength="999" onChange={onTextChange}></input>
+            <input type="submit" value="Post comment"></input>
+        </form>
+    )
+};
+
+export { PostCommentForm };

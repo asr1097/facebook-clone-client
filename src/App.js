@@ -7,6 +7,7 @@ import { IndexPage } from "./components/IndexPage";
 import { SearchResults } from "./components/SearchResults";
 import { ChatWindow } from "./components/ChatWindow";
 import { Notifications } from "./components/Notifications";
+import { Comment } from "./components/Comment";
 
 
 const socket = io("https://localhost:3000/", {
@@ -323,6 +324,10 @@ function App() {
               notifs={notifications}
               setNotifsActive={setNotifsActive}
               />}
+          />
+          <Route
+            path="/comments/:id"
+            element={<Comment />}
           />
         </Routes>
       </SocketContext.Provider>
