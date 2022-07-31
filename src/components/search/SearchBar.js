@@ -19,7 +19,7 @@ const SearchBar = (props) => {
         })
         const data = await rawData.json();
         props.setsearchResult(data);
-        navigate("/facebook-clone-client/search")
+        navigate("/search")
     }
 
     return (

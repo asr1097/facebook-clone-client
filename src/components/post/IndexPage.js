@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Post } from "./Post";
+import { PostIndex } from "./PostIndex";
 import { NewPost } from "./NewPost";
 
 const IndexPage = ({loggedIn, user}) => {
@@ -39,7 +39,7 @@ const IndexPage = ({loggedIn, user}) => {
     return (
         <div>
             <NewPost />
-            {data ? data.map((post, index) => <Post 
+            {data ? data.map((post, index) => <PostIndex 
                     key={post._id} 
                     index={index} 
                     post={post}

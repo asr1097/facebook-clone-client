@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { UserContext } from "../App";
+import { UserContext } from "../../App";
 
 const ChatFriendTile = ({ sender, messages, activeUsers, renderChatroom }) => {
 
@@ -15,10 +15,9 @@ const ChatFriendTile = ({ sender, messages, activeUsers, renderChatroom }) => {
             {break}
         }
         setUnreadMsgs(unreadMsgsCount);
-    }, [activeUsers, messages, sender, user._id])
+    }, [activeUsers, messages, sender, user._id]);
 
     return (
-        
         <div key={sender} id={sender} onClick={(ev) => {
             renderChatroom(ev);
         }}>
@@ -26,7 +25,6 @@ const ChatFriendTile = ({ sender, messages, activeUsers, renderChatroom }) => {
              {activeUsers.includes(sender) ? <span>(active)</span> : null}
              {unreadMsgs}
         </div>
-        
     )
 };
 

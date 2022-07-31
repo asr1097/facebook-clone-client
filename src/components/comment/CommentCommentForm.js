@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-const CommentCommentForm = ({ commentOwner, postID, parentCommentID, index, pushNewComment }) => {
+const CommentCommentForm = ({ commentOwner, postID, parentCommentID }) => {
   
     const [text, setText] = useState();
     const [showForm, setShowForm] = useState(false);
 
+    const params = useParams();
     const navigate = useNavigate();
 
     const formSwitch = (ev) => {
@@ -27,13 +28,8 @@ const CommentCommentForm = ({ commentOwner, postID, parentCommentID, index, push
             body: formData
         });
         if(response.ok) {
-            let comment = await response.json();
-            /* If called from top comment - comment which is not a child comment */
-            if(pushNewComment) { pushNewComment(index, comment);}
-            /* If called from child comment */
-            else {
-                navigate(`../comments/${parentCommentID}`)
-            }
+            if(params.id === parentCommentID) {window.location.reload(false)}
+            navigate(`../comments/${parentCommentID}`)
         }
     }
 

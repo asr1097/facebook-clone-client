@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const PostCommentForm = ({ postID, user, index, pushNewComment }) => {
+const PostCommentForm = ({ postID, user, index, pushNewComment, singlePostPushComment }) => {
 
     const [text, setText] = useState();
 
@@ -23,7 +23,8 @@ const PostCommentForm = ({ postID, user, index, pushNewComment }) => {
         if(response.ok) {
             let comment = await response.json();
             console.log(comment)
-            pushNewComment(index, comment);
+            if(pushNewComment) {pushNewComment(index, comment)}
+            else{singlePostPushComment(comment)}
         };
     };
 

@@ -9,6 +9,12 @@ const ChatWindow = ({setActiveRoom, activeRoom, readMessages, activeUsers, messa
         readMessages(ev.target.id);
     }
 
+    useEffect(() => {
+        return (() => {
+            setActiveRoom(false)
+        })
+    }, [])
+
     return (
         <div>
             <ChatLobby 

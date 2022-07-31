@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from "react";
-import { UserContext } from "../App";
+import { UserContext } from "../../App";
 
-const SRFriendRequest = ({profile}) => {
+const FriendRequestStatus = ({profile}) => {
     const [requestStatus, setRequestStatus] = useState()
     const user = useContext(UserContext);
 
@@ -61,8 +61,8 @@ const SRFriendRequest = ({profile}) => {
     }
 
     const switchRender = () => {
-
-        if(requestStatus === "Friend") {return <button>Friends</button>}
+        if(user._id === profile._id) {return null}
+        if(requestStatus === "Friend") {return null}
         else if(requestStatus === "Sent") {return <button onClick={cancelRequest}>Cancel Request</button>}
         else if(requestStatus === "Received") {
             return (
@@ -81,4 +81,4 @@ const SRFriendRequest = ({profile}) => {
     )
 };
 
-export { SRFriendRequest };
+export { FriendRequestStatus };

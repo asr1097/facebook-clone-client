@@ -2,12 +2,14 @@ import { useState, useEffect, createContext } from "react";
 import './styles/App.css';
 import { io } from "socket.io-client";
 import { Routes, Route, Link } from "react-router-dom";
-import { SearchBar } from "./components/SearchBar";
-import { IndexPage } from "./components/IndexPage";
-import { SearchResults } from "./components/SearchResults";
-import { ChatWindow } from "./components/ChatWindow";
+import { SearchBar } from "./components/search/SearchBar";
+import { IndexPage } from "./components/post/IndexPage";
+import { SearchResults } from "./components/search/SearchResults";
+import { ChatWindow } from "./components/chat/ChatWindow";
 import { Notifications } from "./components/Notifications";
-import { Comment } from "./components/Comment";
+import { Comment } from "./components/comment/Comment";
+import { Post } from "./components/post/Post";
+import { Profile } from "./components/profile/Profile";
 
 
 const socket = io("https://localhost:3000/", {
@@ -86,7 +88,7 @@ function App() {
 
     const readNotifications = () => {
       let readNotifsIDs = [];
-      for (let i = notifications.length - 1; i >= 0; i--) {
+      for (let i = 0; i < notifications.length; i++) {
         if(!notifications[i].read) {
         
           readNotifsIDs.push(notifications[i]._id)
@@ -107,9 +109,9 @@ function App() {
           method: "post",
           body: formData
         })
-        if(statusCode === 200){
+        if(statusCode.ok){
           let newNotifications = [...notifications];
-          for (let i = notifs.length - 1; i >= 0; i--) {
+          for (let i = 0; i < notifs.length; i++) {
             newNotifications[i].read = true;
           }
           setNotifications(newNotifications);
@@ -141,7 +143,7 @@ function App() {
 
   useEffect(() => {
     let unreadNotifs = 0;
-      for (let i = notifications.length - 1; i >= 0; i--) {
+      for (let i = 0; i < notifications.length; i++) {
         if(!notifications[i].read) {
           unreadNotifs++;
         }
@@ -153,7 +155,7 @@ function App() {
   /* Check if user is logged in by checking cookies */
   useEffect(() => {
     let cookies = document.cookie.split(";");
-    cookies.some(cookie => {
+    cookies.forEach(cookie => {
       let regex = new RegExp("loggedIn*");
       cookie.match(regex) ? setloggedIn(true): setloggedIn()
     })
@@ -209,7 +211,7 @@ function App() {
 
     const onNotification = (notif) => {
       if(notifsActive){notif.read = true};
-      let newNotifications = [...notifications, notif];
+      let newNotifications = [notif, ...notifications];
       setNotifications(newNotifications);
     }
 
@@ -281,7 +283,17 @@ function App() {
       socket.off("user disconnected");
       socket.off("new notification");
     }
-  }, [loggedIn, socketID, activeUsers, user, messages]);
+  }, 
+    [
+      loggedIn,
+      socketID,
+      activeUsers,
+      activeRoom,
+      notifications,
+      notifsActive,
+      user,
+      messages
+    ]);
 
   return (
     <div className="App">
@@ -316,7 +328,11 @@ function App() {
           />
           <Route 
             path="/search" 
-            element={<SearchResults users={searchResult}/>} 
+            element={<SearchResults 
+              users={searchResult}
+              setsearchResult={setsearchResult}  
+              />
+            } 
           />
           <Route 
             path="/notifications"
@@ -328,6 +344,14 @@ function App() {
           <Route
             path="/comments/:id"
             element={<Comment />}
+          />
+          <Route 
+            path="/posts/:id"
+            element={<Post />}
+          />
+          <Route 
+            path="/profile/:id"
+            element={<Profile />}
           />
         </Routes>
       </SocketContext.Provider>

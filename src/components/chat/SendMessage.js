@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { SocketContext, UserContext } from "../App";
+import { SocketContext, UserContext } from "../../App";
 
 const SendMessage = ({ activeRoom }) => {
 

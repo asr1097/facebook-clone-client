@@ -1,6 +1,9 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { CommentCommentForm } from "./CommentCommentForm";
+import { LikeComment } from "./LikeComment";
+import { ChildComment } from "./ChildComment";
+import { LikeList } from "../profile/LikeList";
 
 const Comment = () => {
 
@@ -31,35 +34,18 @@ const Comment = () => {
                 <p>{comment.comment.text}</p>
                 <p>{comment.comment.date}</p>
                 <p>{comment.comment.user.name.full}</p>
+                <LikeComment id={comment.comment._id} likes={comment.comment.likes} />
                 <CommentCommentForm 
                     commentOwner={comment.comment.user._id}
                     postID={comment.comment.post}
                     parentCommentID={comment.comment._id}
                 />
-                {comment.childrenComments.map((childComment, index) => {
-                    return (
-                        <div>
-                            <p>{childComment.text}</p>
-                            <p>{childComment.date}</p>
-                            <p>{childComment.user.name.full}</p>
-                            <CommentCommentForm 
-                                commentOwner={childComment.user._id}
-                                postID={childComment.post}
-                                parentCommentID={childComment._id}
-                            />
-                            {childComment.childrenComments.length ? 
-                                <Link to={`/comments/${childComment._id}`}>{childComment.childrenComments.length} replies</Link>
-                                : null
-                            }
-                        </div>
-                    )
+                {comment.childrenComments.map(childComment => {
+                    return <ChildComment childComment={childComment} />
                 })}
             </div>
         )
-    } else {
-        return null
-    }
-
+    } 
 }
 
 export { Comment };

@@ -9,7 +9,7 @@ const Notifications = ({ notifs, setNotifsActive }) => {
         return () => {
             setNotifsActive(false)
         }
-    }, [setNotifsActive])
+    }, [])
 
     const renderSwitch = (notif, index) => {
         switch(notif.type) {
@@ -18,6 +18,7 @@ const Notifications = ({ notifs, setNotifsActive }) => {
                 <div key={index}>
                     <Link to={"../" + notif.profileID.url}>{notif.profileID.name.full} </Link>
                     has liked your <Link to={"../" + notif.postID.url}>post</Link>.
+                    <p>{notif.date}</p>
                 </div>
                 )
             case "post comment":
@@ -26,6 +27,7 @@ const Notifications = ({ notifs, setNotifsActive }) => {
                         <Link to={"../" + notif.profileID.url}>{notif.profileID.name.full} </Link>
                         has <Link to={"../" + notif.newCommentID.url}>commented</Link> 
                         on your <Link to={"../" + notif.postID.url}>post</Link>.
+                        <p>{notif.date}</p>
                     </div>
                 )
             
@@ -35,6 +37,7 @@ const Notifications = ({ notifs, setNotifsActive }) => {
                         <Link to={"../" + notif.profileID.url}>{notif.profileID.name.full} </Link>
                         has <Link to={"../" + notif.newCommentID.url}>replied</Link>
                         to your <Link to={"../" + notif.parentCommentID.url}>comment</Link>.
+                        <p>{notif.date}</p>
                     </div>
                 )
             case "liked comment":
@@ -42,6 +45,7 @@ const Notifications = ({ notifs, setNotifsActive }) => {
                     <div key={index}>
                         <Link to={"../" + notif.profileID.url}>{notif.profileID.name.full} </Link>
                         has liked your <Link to={"../" + notif.commentID.url}>comment</Link>.
+                        <p>{notif.date}</p>
                     </div>
                 )
 
@@ -50,6 +54,7 @@ const Notifications = ({ notifs, setNotifsActive }) => {
                     <div key={index}>
                         <Link to={"../" + notif.profileID.url}>{notif.profileID.name.full}</Link>
                          has accepted your friend request.
+                         <p>{notif.date}</p>
                     </div>
                 )
             
