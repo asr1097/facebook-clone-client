@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { CommentCommentForm } from "./CommentCommentForm";
 import { LikeComment } from "./LikeComment";
 import { ChildComment } from "./ChildComment";
-import { LikeList } from "../profile/LikeList";
 
 const Comment = () => {
 
@@ -41,7 +40,7 @@ const Comment = () => {
                     parentCommentID={comment.comment._id}
                 />
                 {comment.childrenComments.map(childComment => {
-                    return <ChildComment childComment={childComment} />
+                    return <ChildComment key={childComment._id} childComment={childComment} />
                 })}
             </div>
         )

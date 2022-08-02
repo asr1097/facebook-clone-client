@@ -26,16 +26,14 @@ const PostIndex = ({ post, index, likePost, unlikePost, pushNewComment }) => {
             {post.comments.map(comment => {
                 if(!comment.parentComment){
                     return (
-                        <div>
-                            <PostComment
-                                key={comment._id} 
-                                comment={comment}
-                                postID={post._id}
-                                index={index}
-                                pushNewComment={pushNewComment} 
-                            />
-                            
-                        </div>)
+                        <PostComment
+                            key={comment._id} 
+                            comment={comment}
+                            postID={post._id}
+                            index={index}
+                            pushNewComment={pushNewComment} 
+                        />
+                    )
                 } else {
                     return null;
                 }})

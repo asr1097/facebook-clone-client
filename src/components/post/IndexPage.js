@@ -36,20 +36,23 @@ const IndexPage = ({loggedIn, user}) => {
         }
     }, [loggedIn]);
 
-    return (
-        <div>
-            <NewPost />
-            {data ? data.map((post, index) => <PostIndex 
-                    key={post._id} 
-                    index={index} 
-                    post={post}
-                    likePost={likePost}
-                    unlikePost={unlikePost}
-                    pushNewComment={pushNewComment} 
-                />)
-            : null}
-        </div>
-    )
+    if(data) {
+        return (
+            <div>
+                <NewPost />
+                {data.map((post, index) => <PostIndex 
+                        key={post._id} 
+                        index={index} 
+                        post={post}
+                        likePost={likePost}
+                        unlikePost={unlikePost}
+                        pushNewComment={pushNewComment} 
+                    />)
+                }
+            </div>
+           
+        )
+    }
 }
 
 export { IndexPage };

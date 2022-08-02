@@ -1,8 +1,7 @@
 import { useState, useEffect, createContext } from "react";
 import './styles/App.css';
 import { io } from "socket.io-client";
-import { Routes, Route, Link } from "react-router-dom";
-import { SearchBar } from "./components/search/SearchBar";
+import { Routes, Route } from "react-router-dom";
 import { IndexPage } from "./components/post/IndexPage";
 import { SearchResults } from "./components/search/SearchResults";
 import { ChatWindow } from "./components/chat/ChatWindow";
@@ -10,6 +9,8 @@ import { Notifications } from "./components/Notifications";
 import { Comment } from "./components/comment/Comment";
 import { Post } from "./components/post/Post";
 import { Profile } from "./components/profile/Profile";
+import { NavBar } from "./components/nav/NavBar";
+import { Photos } from "./components/post/Photos";
 
 
 const socket = io("https://localhost:3000/", {
@@ -202,7 +203,7 @@ function App() {
       setSocketID(fetchedUser._id)
     };
 
-    if(!user && !socketID && loggedIn) {fetchUser();};
+    if(!user && !socketID && loggedIn) {fetchUser();}
 
   }, [loggedIn, user, socketID])
 
@@ -297,16 +298,13 @@ function App() {
 
   return (
     <div className="App">
-      {!loggedIn ? 
-      <a href="https://localhost:3000/auth/facebook">Log in</a> :
-      <a href="https://localhost:3000/logout">Log out</a>}
-      <SearchBar setsearchResult={setsearchResult}/>
-      <Link to={"/chat"}>
-        <button>Message</button>
-      </Link>
-      <Link to={"/notifications"}>
-        <button>Notifications {unreadNotifsCount}</button>
-      </Link>
+      <NavBar 
+        user={user} 
+        loggedIn={loggedIn} 
+        unreadNotifsCount={unreadNotifsCount}
+        searchResult={searchResult}
+        setsearchResult={setsearchResult}
+      />
       <UserContext.Provider value={user}>
       <SocketContext.Provider value={socket}>
         <Routes>
@@ -352,6 +350,10 @@ function App() {
           <Route 
             path="/profile/:id"
             element={<Profile />}
+          />
+          <Route 
+            path="/profile/:id/photos"
+            element={<Photos />}
           />
         </Routes>
       </SocketContext.Provider>

@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 const SearchBar = (props) => {
 
     const [searchInput, setsearchInput] = useState();
-    
-    let navigate = useNavigate();
 
+    const navigate = useNavigate();
+    
     const searchUsers = async (ev) => {
         ev.preventDefault();
         let formData = new FormData();
@@ -19,13 +19,13 @@ const SearchBar = (props) => {
         })
         const data = await rawData.json();
         props.setsearchResult(data);
-        navigate("/search")
+        navigate("/search");
     }
 
     return (
         <form onSubmit={searchUsers}>
             <input type="text" onChange={(ev) => setsearchInput(ev.target.value)}></input>
-            <input type="submit" value="Search"></input>
+            <input type="submit" value={"Search"}></input>
         </form>
     )
 }

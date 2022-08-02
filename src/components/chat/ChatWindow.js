@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { ChatLobby } from "./ChatLobby";
 import { ChatRoom } from "./ChatRoom";
 

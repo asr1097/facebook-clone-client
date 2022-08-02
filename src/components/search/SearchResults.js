@@ -1,13 +1,8 @@
 import { FriendRequestStatus } from "../profile/FriendRequestStatus";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const SearchResults = ({ users, setsearchResult }) => {
-
-    useEffect(() => {
-        return (() => {
-            setsearchResult();
-        })
-    }, []);
 
     if(users) {
         if(!users.length) {return <p>No results found.</p>}
@@ -15,12 +10,14 @@ const SearchResults = ({ users, setsearchResult }) => {
             return (
                 users.map(profile => {
                     return (
-                        <div>
-                            <img 
-                                src={`https://localhost:3000/${profile.profilePhoto}`} 
-                                alt={"Profile"}
-                            />
-                            <p>{profile.name.full}</p>
+                        <div key={profile._id}>
+                            <Link to={`../${profile.url}`}>
+                                <img 
+                                    src={`https://localhost:3000/${profile.profilePhoto}`} 
+                                    alt={"Profile"}
+                                />
+                            </Link>
+                            <Link to={`../${profile.url}`}> {profile.name.full}</Link>
                             <FriendRequestStatus profile={profile} />
                             <hr/>
                         </div>

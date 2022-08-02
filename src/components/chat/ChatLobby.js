@@ -14,9 +14,10 @@ const ChatLobby = ({ activeUsers, messages, renderChatroom }) => {
         });
 
         return (
-            sortedMessages.map(sender => {
+            sortedMessages.map((sender, index) => {
                 return (
-                    <ChatFriendTile 
+                    <ChatFriendTile
+                        key={index} 
                         sender={sender} 
                         activeUsers={activeUsers}
                         messages={messages}
