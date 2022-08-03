@@ -1,7 +1,15 @@
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const Notifications = ({ notifs, setNotifsActive }) => {
+
+    const [notifsToRender, setNotifsToRender] = useState();
+    const [renderLevel, setRenderLevel] = useState(1);
+    const notifsChunk = 5;
+
+    const increaseLevel = () => {
+        setRenderLevel(renderLevel + 1)
+    };
 
     useEffect(() => {
         setNotifsActive(true);
@@ -9,7 +17,11 @@ const Notifications = ({ notifs, setNotifsActive }) => {
         return () => {
             setNotifsActive(false)
         }
-    }, [])
+    }, []);
+
+    useEffect(() => {
+        if(notifs){setNotifsToRender(notifs.slice(0, renderLevel * notifsChunk))}
+    }, [notifs, renderLevel]);
 
     const renderSwitch = (notif, index) => {
         switch(notif.type) {
@@ -63,11 +75,14 @@ const Notifications = ({ notifs, setNotifsActive }) => {
         }
     }
 
-    return (
-        <div>
-            {notifs.length ? notifs.map((notif, index) => renderSwitch(notif, index)) : null}
-        </div>
-    )
+    if(notifsToRender && notifsToRender.length){
+        return (
+            <div>
+                {notifsToRender.length ? notifsToRender.map((notif, index) => renderSwitch(notif, index)) : null}
+                {notifsToRender.length === notifs.length ? null : <button onClick={increaseLevel}>Load more</button>}
+            </div>
+        )
+    } else {return <p>No notifications to show</p>}
 };
 
 export { Notifications };

@@ -10,6 +10,9 @@ const NavBar = ({ loggedIn, setsearchResult, unreadNotifsCount, user }) => {
                 {user ?
                 <div>
                   <SearchBar setsearchResult={setsearchResult}/>
+                  <Link to={"/"}>
+                    <button>Home</button>
+                  </Link>
                   <Link to={"/chat"}>
                     <button>Message</button>
                   </Link>

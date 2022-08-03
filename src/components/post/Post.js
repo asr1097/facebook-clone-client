@@ -4,12 +4,20 @@ import { PostComment } from "../comment/PostComment";
 import { LikePost } from "./LikePost";
 import { PostCommentForm } from "../comment/PostCommentForm";
 import { UserContext } from "../../App";
+import { Details } from "../Details";
 
 const Post = () => {
 
     const [post, setPost] = useState();
+    const [renderLevel, setRenderLevel] = useState(1);
+    const [commentsToRender, setCommentsToRender] = useState();
     const params = useParams();
     const user = useContext(UserContext);
+    const commentsChunk = 3;
+    
+    const increaseLevel = (ev) => {
+        setRenderLevel(renderLevel + 1)
+    };
 
     const singlePostLiked = () => {
         let newPost = {...post};
@@ -26,9 +34,9 @@ const Post = () => {
 
     const singlePostPushComment = (comment) => {
         let newPost = {...post};
-        newPost.comments.push(comment);
+        newPost.directComments.push(comment);
         setPost(newPost);
-    }
+    };
 
     useEffect(() => {
         const fetchPost = async() => {
@@ -38,24 +46,34 @@ const Post = () => {
             });
             let post = await response.json();
             setPost(post)
+            setCommentsToRender(post.directComments.slice(0, renderLevel * commentsChunk));
         };
 
         fetchPost();
 
-        return (() => {
+        return () => {
             setPost();
-        });
+            setRenderLevel(1);
+            setCommentsToRender();
+        };
 
     }, [params.id]);
+
+    useEffect(() => {
+        if(post){setCommentsToRender(post.directComments.slice(0, renderLevel * commentsChunk))}
+    }, [renderLevel, commentsChunk, post])
 
     if(post) {
         return (
             <div key={post._id}>
                 {post.image ? <img alt="Post" src={"https://localhost:3000/images/" + post.image}></img> 
                 : null}
-                <p>{post.user.name.full}</p>
                 <p>{post.text}</p>
-                <p>{post.date}</p>
+                <Details 
+                    date={post.date}
+                    url={post.url}
+                    user={post.user} 
+                />
                 <LikePost 
                     postID={post._id} 
                     likes={post.likes}
@@ -67,22 +85,25 @@ const Post = () => {
                     user={post.user._id}
                     singlePostPushComment={singlePostPushComment}
                 />
-                {post.comments.map(comment => {
-                    if(!comment.parentComment){
-                        return (
-                            <div>
+                <div>
+                    {commentsToRender.map(comment => {
+                        if(!comment.parentComment){
+                            return (
                                 <PostComment
                                     key={comment._id} 
                                     comment={comment}
                                     postID={post._id} 
                                 />
-                                
-                            </div>)
-                    } else {
-                        return null;
-                    }})
-                }
-               
+                                )
+                        } else {
+                            return null;
+                        }})
+                    }
+                    {commentsToRender.length === post.directComments.length ? 
+                    null
+                    : <button onClick={increaseLevel}>Load more</button>
+                    }
+                </div>
                 <hr />
             </div>
         )

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const NewPost = () => {
+const NewPost = ({ pushPost }) => {
     const [text, setText] = useState();
     const [file, setFile] = useState();
 
@@ -9,13 +9,16 @@ const NewPost = () => {
         let formData = new FormData();
         formData.append("text", text);
         formData.append("imageField", file);
-        let statusCode = await fetch("https://localhost:3000/posts/new", {
+        let response = await fetch("https://localhost:3000/posts/new", {
             mode: "cors",
             credentials: "include",
             method: "post",
             body: formData
         });
-        if(statusCode === 200){return}
+        if(response.ok){
+            let post = await response.json();
+            pushPost(post);
+        }
     };
 
     const onFileChange = (ev) => {

@@ -22,7 +22,6 @@ const PostCommentForm = ({ postID, user, index, pushNewComment, singlePostPushCo
         });
         if(response.ok) {
             let comment = await response.json();
-            console.log(comment)
             if(pushNewComment) {pushNewComment(index, comment)}
             else{singlePostPushComment(comment)}
         };

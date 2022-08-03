@@ -1,9 +1,17 @@
 import { useState, useEffect } from "react";
-import { PostIndex } from "./PostIndex";
+import { PostList } from "./PostList";
 import { NewPost } from "./NewPost";
 
 const IndexPage = ({loggedIn, user}) => {
     const [data, setData] = useState();
+    const [postsToRender, setPostsToRender] = useState();
+    const [renderLevel, setRenderLevel] = useState(1);
+    const postsChunk = 5;
+
+    const pushNewPost = (post) => {
+        let newData = [post, ...data];
+        setData(newData);
+    }
 
     const likePost = (index) => {
         let newData = [...data];
@@ -20,8 +28,12 @@ const IndexPage = ({loggedIn, user}) => {
 
     const pushNewComment = (index, comment) => {
         let newData = [...data];
-        newData[index].comments.splice(0, 0, comment);
+        newData[index].comments.splice(newData[index].comments.length, 0, comment);
         setData(newData);
+    };
+
+    const increaseLevel = () => {
+        setRenderLevel(renderLevel + 1)
     };
 
     useEffect(() => {
@@ -36,11 +48,15 @@ const IndexPage = ({loggedIn, user}) => {
         }
     }, [loggedIn]);
 
-    if(data) {
+    useEffect(() => {
+        if(data){setPostsToRender(data.slice(0, renderLevel * postsChunk))}
+    }, [renderLevel, postsChunk, data])
+
+    if(postsToRender) {
         return (
             <div>
-                <NewPost />
-                {data.map((post, index) => <PostIndex 
+                <NewPost pushPost={pushNewPost}/>
+                {postsToRender.map((post, index) => <PostList 
                         key={post._id} 
                         index={index} 
                         post={post}
@@ -48,6 +64,10 @@ const IndexPage = ({loggedIn, user}) => {
                         unlikePost={unlikePost}
                         pushNewComment={pushNewComment} 
                     />)
+                }
+                {postsToRender.length === data.length ? 
+                    null
+                    : <button onClick={increaseLevel}>Load more</button>
                 }
             </div>
            

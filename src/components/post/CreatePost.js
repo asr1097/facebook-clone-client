@@ -4,7 +4,8 @@ const CreatePost = () => {
         ev.preventDefault();
         let formData = new FormData();
         formData.append("text", ev.target.text);
-        formData.append("imageField", ev.target.imageField);
+        if(ev.target.imageField){ formData.append("imageField", ev.target.imageField);}
+       
     }
 
     return (

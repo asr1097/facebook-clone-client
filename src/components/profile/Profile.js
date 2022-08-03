@@ -1,7 +1,7 @@
 import { useEffect, useContext, useState } from "react";
 import { useParams } from "react-router-dom";
 import { UserContext } from "../../App";
-import { ProfilePost } from "../post/ProfilePost";
+import { PostList } from "../post/PostList";
 
 const Profile = () => {
     const params = useParams();
@@ -9,6 +9,13 @@ const Profile = () => {
 
     const [profile, setProfile] = useState();
     const [posts, setPosts] = useState();
+    const [postsToRender, setPostsToRender] = useState();
+    const [renderLevel, setRenderLevel] = useState(1);
+    const postsChunk = 5;
+
+    const increaseLevel = (ev) => {
+        setRenderLevel(renderLevel + 1)
+    };
 
     const likePost = (index) => {
         let newPosts = [...posts];
@@ -25,7 +32,7 @@ const Profile = () => {
 
     const pushNewComment = (index, comment) => {
         let newPosts = [...posts];
-        newPosts[index].comments.splice(0, 0, comment);
+        newPosts[index].directComments.splice(newPosts[index].directComments.length, 0, comment);
         setPosts(newPosts);
     }
 
@@ -49,9 +56,13 @@ const Profile = () => {
             setPosts();
         });
 
-    }, [params.id])
+    }, [params.id]);
 
-    if(profile && posts) {
+    useEffect(() => {
+        if(posts){setPostsToRender(posts.slice(0, renderLevel * postsChunk))}
+    }, [renderLevel, postsChunk, posts])
+
+    if(profile && postsToRender) {
         return (
             <div>
                 <img src={`https://localhost:3000/images/${profile.profilePhoto}`} alt="Profile"/>
@@ -62,8 +73,8 @@ const Profile = () => {
                 <p>{profile.email}</p>
                 <hr />
                 <div>
-                    {posts.map((post, index) => {
-                        return <ProfilePost
+                    {postsToRender.map((post, index) => {
+                        return <PostList
                             key={post._id} 
                             index={index} 
                             user={profile} 
@@ -73,6 +84,10 @@ const Profile = () => {
                             pushNewComment={pushNewComment}
                             />
                     })}
+                    {postsToRender.length === posts.length ? 
+                    null
+                    : <button onClick={increaseLevel}>Load more</button>
+                }
                 </div>
             </div>
         )
