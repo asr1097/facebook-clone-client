@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext } from "react";
+import { useState, useEffect, createContext, useCallback } from "react";
 import './styles/App.css';
 import { io } from "socket.io-client";
 import { Routes, Route } from "react-router-dom";
@@ -40,11 +40,7 @@ function App() {
   const [notifsActive, setNotifsActive] = useState(false);
   const [unreadNotifsCount, setUnreadNotifsCount] = useState();
 
-  
-
-  
-
-  const readMessages = (friend, msgArray=[]) => {
+  const readMessages = useCallback((friend, msgArray=[]) => {
      /* 
       If the chatroom is already active when message from friend is received,
       "msgArray" is passed from socketIO event handler so the received message
@@ -91,7 +87,7 @@ function App() {
         }
       })
     } else {return 0};
-  };
+  }, [messages]);
 
   /* Fetch read notifications when "Notifications" component is active */
   useEffect(() => {
@@ -247,8 +243,8 @@ function App() {
     const readMessagesSocket = (friend) => {
       let newMessages = {...messages};
       for (let i = newMessages[friend].length; i >= 0; i--) {
-        if(newMessages[friend][i].from._id === user._id && !newMessages[friend][i].read){
-          newMessages[friend][i].read = true
+        if(newMessages[friend][i-1].from._id === user._id && !newMessages[friend][i-1].read){
+          newMessages[friend][i-1].read = true
         } else{break}
       }
       setMessages(newMessages)
@@ -325,6 +321,7 @@ function App() {
       socket.off("activeUsers");
       socket.off("new connection");
       socket.off("new message");
+      socket.off("message read");
       socket.off("user disconnected");
       socket.off("new notification");
     }
@@ -337,7 +334,8 @@ function App() {
       notifications,
       notifsActive,
       user,
-      messages
+      messages,
+      readMessages
     ]);
 
   return (
