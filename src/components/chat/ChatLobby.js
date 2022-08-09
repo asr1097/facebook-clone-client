@@ -10,7 +10,7 @@ const ChatLobby = ({ activeUsers, messages, renderChatroom }) => {
         };
 
         sortedMessages.sort((a, b) => {
-            return a[a.length-1].content.date - b[b.length-1].content.date
+            return a[a.length-1].date - b[b.length-1].date
         });
 
         return (

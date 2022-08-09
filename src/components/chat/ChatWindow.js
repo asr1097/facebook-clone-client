@@ -1,26 +1,29 @@
 import { useEffect } from "react";
 import { ChatLobby } from "./ChatLobby";
 import { ChatRoom } from "./ChatRoom";
+import { useParams } from "react-router-dom";
 
 const ChatWindow = ({setActiveRoom, activeRoom, readMessages, activeUsers, messages}) => {
 
-    const renderChatroom = (ev) => {
-        setActiveRoom(ev.target.id);
-        readMessages(ev.target.id);
-    }
+    const params = useParams();
 
     useEffect(() => {
-        return (() => {
-            setActiveRoom(false)
-        })
-    }, [])
+        if(params.id) {
+            setActiveRoom(params.id);
+            readMessages(params.id)
+        }
+        if(!params.id) {setActiveRoom()}
+
+        return () => {
+            setActiveRoom();
+        }
+    }, [params.id, setActiveRoom, readMessages]);
 
     return (
         <div>
             <ChatLobby 
                 messages={messages} 
                 activeUsers={activeUsers} 
-                renderChatroom={renderChatroom}
             />
             {activeRoom ? <ChatRoom  
                 messages={messages[activeRoom]}

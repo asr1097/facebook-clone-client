@@ -2,6 +2,7 @@ import { useEffect, useContext, useState } from "react";
 import { useParams } from "react-router-dom";
 import { UserContext } from "../../App";
 import { PostList } from "../post/PostList";
+import { Link } from "react-router-dom";
 
 const Profile = () => {
     const params = useParams();
@@ -71,6 +72,7 @@ const Profile = () => {
                 <p>{profile.dateOfBirth}</p>
                 <p>{profile.gender}</p>
                 <p>{profile.email}</p>
+                <Link to={`../chat/${profile._id}`}>Message</Link>
                 <hr />
                 <div>
                     {postsToRender.map((post, index) => {

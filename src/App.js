@@ -11,6 +11,7 @@ import { Post } from "./components/post/Post";
 import { Profile } from "./components/profile/Profile";
 import { NavBar } from "./components/nav/NavBar";
 import { Photos } from "./components/post/Photos";
+import { FriendRequests } from "./components/profile/FriendRequests";
 
 
 const socket = io("https://localhost:3000/", {
@@ -23,6 +24,9 @@ const UserContext = createContext();
 function App() {
 
   const [user, setUser] = useState();
+  const [friends, setFriends] = useState();
+  const [receivedFriendRequests, setReceivedFriendRequests] = useState();
+  const [friendRequestsCounter, setFriendRequestCounter] = useState();
   const [loggedIn, setloggedIn] = useState();
   const [socketID, setSocketID] = useState();
   const [activeUsers, setActiveUsers] = useState([]);
@@ -30,10 +34,15 @@ function App() {
 
   const [messages, setMessages] = useState({});
   const [activeRoom, setActiveRoom] = useState();
+  const [unreadMsgsGlobal, setUnreadMsgsGlobal] = useState();
 
   const [notifications, setNotifications] = useState([]);
   const [notifsActive, setNotifsActive] = useState(false);
   const [unreadNotifsCount, setUnreadNotifsCount] = useState();
+
+  
+
+  
 
   const readMessages = (friend, msgArray=[]) => {
      /* 
@@ -44,17 +53,17 @@ function App() {
     let readMessages = [];
     if(msgArray.length){readMessages.push(msgArray[0]._id)}
     
-    if(!msgArray.length){
+    if(!msgArray.length && Object.keys(messages).length){
       /* 
         When the chatroom is opened, loop messages from the last one 
         and check if it's been read - if not, push it to the "readMessages".
         When first read message is reached, break from the loop.
       */
       for(let i = messages[friend].length - 1; i >= 0; i--) {
-        if(messages[friend][i].from === friend && !messages[friend][i].content.read){
+        if(messages[friend][i].from._id === friend && !messages[friend][i].read){
           readMessages.push(messages[friend][i]._id)
         }
-        else if(messages[friend][i].from === friend && messages[friend][i].content.read){
+        else if(messages[friend][i].from._id === friend && messages[friend][i].read){
           break;
         }
       };
@@ -74,8 +83,8 @@ function App() {
           if(msgArray.length){newMessages[friend] = [...newMessages[friend], msgArray[0]]}
           else {
             for(let i = newMessages[friend].length - 1; i >= 0; i--){
-              if(newMessages[friend][i].content.read) {break}
-              newMessages[friend][i].content.read = true;
+              if(newMessages[friend][i].read) {break}
+              newMessages[friend][i].read = true;
             }
           }
           setMessages(newMessages);
@@ -142,6 +151,7 @@ function App() {
 
   }, [user, loggedIn])
 
+  /* Count unread notifications */
   useEffect(() => {
     let unreadNotifs = 0;
       for (let i = 0; i < notifications.length; i++) {
@@ -177,7 +187,7 @@ function App() {
     const onFetchMessages = (messages) => {
       let fetchedMessages = {};
       messages.forEach(msg => {
-      let friend = msg.from === user._id ? msg.to : msg.from;
+      let friend = msg.from._id === user._id ? msg.to._id : msg.from._id;
       if(friend in fetchedMessages){
         fetchedMessages[friend] = [...fetchedMessages[friend], msg];
       } else {
@@ -191,6 +201,21 @@ function App() {
 
   }, [user, loggedIn]);
 
+  /* Count unread messages for NavBar */
+  useEffect(() => {
+    const checkUnreadMsgsGlobal = () => {
+      let counter = 0;
+      for (let i = 0; i < Object.keys(messages); i++) {
+        let singleChat = messages[i];
+        if(!singleChat[singleChat.length - 1].read) {counter++}
+      }
+      setUnreadMsgsGlobal(counter);
+    };
+
+    checkUnreadMsgsGlobal();
+
+  }, [messages]);
+
   /* Fetch user data */
   useEffect(() => {
     const fetchUser = async() => {
@@ -199,16 +224,35 @@ function App() {
         mode: "cors"  
       })
       const fetchedUser = await fetchedUserData.json()
-      setUser(fetchedUser);
-      setSocketID(fetchedUser._id)
+      setUser(fetchedUser.user);
+      setSocketID(fetchedUser.user._id);
+      setFriends(fetchedUser.populatedFL.friendsList);
+      setReceivedFriendRequests(fetchedUser.populatedFL.receivedRequests)
     };
 
     if(!user && !socketID && loggedIn) {fetchUser();}
 
-  }, [loggedIn, user, socketID])
+  }, [loggedIn, user, socketID]);
+
+  /* Received friend request counter for NavBar */
+  useEffect(() => {
+    if(receivedFriendRequests){
+      setFriendRequestCounter(receivedFriendRequests.length)
+    }
+  }, [receivedFriendRequests]);
 
   /* SocketIO events handlers */
   useEffect(() => {
+
+    const readMessagesSocket = (friend) => {
+      let newMessages = {...messages};
+      for (let i = newMessages[friend].length; i >= 0; i--) {
+        if(newMessages[friend][i].from._id === user._id && !newMessages[friend][i].read){
+          newMessages[friend][i].read = true
+        } else{break}
+      }
+      setMessages(newMessages)
+    }
 
     const onNotification = (notif) => {
       if(notifsActive){notif.read = true};
@@ -217,16 +261,16 @@ function App() {
     }
 
     const onMessage = (msg) => {
-      let sender = msg.from;
+      let sender = msg.from._id;
       let newMessages = {...messages};
       if(sender === activeRoom){
-        msg.content.read = true;
+        msg.read = true;
         readMessages(sender, [msg])
         return;
       } else {
         if(sender === user._id) {
-          if(msg.to in newMessages) {newMessages[msg.to] = [...newMessages[msg.to], msg]} 
-          else {newMessages[msg.to] = [msg]};
+          if(msg.to._id in newMessages) {newMessages[msg.to._id] = [...newMessages[msg.to._id], msg]} 
+          else {newMessages[msg.to._id] = [msg]};
         }
         else if(sender in newMessages) {
           newMessages[sender] = [...newMessages[sender], msg]
@@ -253,15 +297,15 @@ function App() {
       })
 
       socket.on("new connection", _user => {
-        if(user.friendsList.includes(_user)) {
-          let newActiveUsers = [];
-          activeUsers.forEach(activeUser => newActiveUsers.push(activeUser));
-          newActiveUsers.push(_user);
+        if(user.friendsList.includes(_user._id)) {
+          let newActiveUsers = [...activeUsers, _user._id];
           setActiveUsers(newActiveUsers);
         }
       })
 
       socket.on("new message", onMessage);
+
+      socket.on("message read", readMessagesSocket);
 
       socket.on("new notification", onNotification);
 
@@ -302,6 +346,8 @@ function App() {
         user={user} 
         loggedIn={loggedIn} 
         unreadNotifsCount={unreadNotifsCount}
+        unreadMsgsGlobal={unreadMsgsGlobal}
+        friendRequests={friendRequestsCounter}
         searchResult={searchResult}
         setsearchResult={setsearchResult}
       />
@@ -315,6 +361,13 @@ function App() {
               />}
             />
           <Route 
+            path="/requests"
+            element={<FriendRequests 
+              requests={receivedFriendRequests} 
+              
+            />}
+          />
+          <Route 
             path="/chat" 
             element={<ChatWindow 
               activeUsers={activeUsers}
@@ -323,6 +376,16 @@ function App() {
               activeRoom={activeRoom}
               setActiveRoom={setActiveRoom}
               />} 
+          />
+          <Route 
+            path="/chat/:id"
+            element={<ChatWindow 
+              activeUsers={activeUsers}
+              messages={messages}
+              readMessages={readMessages}
+              activeRoom={activeRoom}
+              setActiveRoom={setActiveRoom}
+              />}
           />
           <Route 
             path="/search" 

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { SearchBar } from "../search/SearchBar";
 
-const NavBar = ({ loggedIn, setsearchResult, unreadNotifsCount, user }) => {
+const NavBar = ({ loggedIn, setsearchResult, unreadNotifsCount, unreadMsgsGlobal, user, friendRequests }) => {
     
         return (
             <nav>
@@ -13,8 +13,11 @@ const NavBar = ({ loggedIn, setsearchResult, unreadNotifsCount, user }) => {
                   <Link to={"/"}>
                     <button>Home</button>
                   </Link>
+                  <Link to={"/requests"}>
+                    <button>Friend requests {friendRequests ? friendRequests : null}</button>
+                  </Link>
                   <Link to={"/chat"}>
-                    <button>Message</button>
+                    <button>Message {unreadMsgsGlobal ? unreadMsgsGlobal : null}</button>
                   </Link>
                   <Link to={"/notifications"}>
                     <button>Notifications {unreadNotifsCount ? unreadNotifsCount : null}</button>
