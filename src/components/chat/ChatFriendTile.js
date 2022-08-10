@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { UserContext, FriendsContext } from "../../App";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const ChatFriendTile = ({ sender, messages, activeUsers }) => {
 
@@ -8,17 +8,17 @@ const ChatFriendTile = ({ sender, messages, activeUsers }) => {
     const [unreadMsgs, setUnreadMsgs] = useState(0);
     const user = useContext(UserContext);
     const friends = useContext(FriendsContext);
-    const params = useParams();
+  
 
     useEffect(() => {
-        if(user && params.id) {
-            if(params.id === user._id){setSenderData(user)}
+        if(user && sender) {
+            if(sender === user._id){setSenderData(user)}
             else {
-                let friend = friends.find(friend => friend._id === params.id);
+                let friend = friends.find(friend => friend._id === sender);
                 setSenderData(friend)
             }
         }
-    }, [friends, params, user]);
+    }, [friends, user, sender]);
 
     useEffect(() => {
         if(user) {
@@ -37,8 +37,8 @@ const ChatFriendTile = ({ sender, messages, activeUsers }) => {
         return (
             <Link to={`../chat/${senderData._id}`}>
                 {senderData.name.full}
-                 {activeUsers.includes(senderData._id) ? <span>(active)</span> : null}
-                 {unreadMsgs}
+                 {activeUsers.includes(senderData._id) ? <span>(active) </span> : null}
+                 {unreadMsgs ? unreadMsgs : null}
             </Link>
         )
     }

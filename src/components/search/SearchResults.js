@@ -1,5 +1,4 @@
 import { FriendRequestStatus } from "../profile/FriendRequestStatus";
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
 const SearchResults = ({ users, setsearchResult }) => {
@@ -13,7 +12,7 @@ const SearchResults = ({ users, setsearchResult }) => {
                         <div key={profile._id}>
                             <Link to={`../${profile.url}`}>
                                 <img 
-                                    src={`https://localhost:3000/${profile.profilePhoto}`} 
+                                    src={`${process.env.REACT_APP_SERVER_URL}/images/${profile.profilePhoto}`} 
                                     alt={"Profile"}
                                 />
                             </Link>

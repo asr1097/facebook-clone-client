@@ -10,12 +10,12 @@ const ChatWindow = ({setActiveRoom, activeRoom, readMessages, activeUsers, messa
     useEffect(() => {
         
         setActiveRoom(params.id);
-        if(params.id){readMessages(params.id)}
+        if(params.id && messages[params.id]){readMessages(params.id)}
         
         return () => {
             setActiveRoom();
         }
-    }, [params.id, setActiveRoom, readMessages]);
+    }, [params.id, setActiveRoom, readMessages, messages]);
 
     return (
         <div>

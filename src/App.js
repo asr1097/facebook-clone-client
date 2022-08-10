@@ -54,7 +54,7 @@ function App() {
   /* Fetch user data */
   useEffect(() => {
     const fetchUser = async() => {
-      const fetchedUserData = await fetch("https://localhost:3000/profile/loggedUser", {
+      const fetchedUserData = await fetch(`${process.env.REACT_APP_SERVER_URL}/profile/loggedUser`, {
         credentials: "include",
         mode: "cors"  
       })
@@ -89,7 +89,7 @@ function App() {
       if(notifs.length) {
         let formData = new FormData()
         formData.append("notifs", notifs);
-        let statusCode = await fetch("https://localhost:3000/notifications/read", {
+        let statusCode = await fetch(`${process.env.REACT_APP_SERVER_URL}/notifications/read`, {
           mode: "cors",
           credentials: "include",
           method: "post",
@@ -115,7 +115,7 @@ function App() {
   /* Fetch notifications */
   useEffect(() => {
     const fetchNotifications = async() => {
-      const fetchedNotifsData = await fetch("https://localhost:3000/notifications", {
+      const fetchedNotifsData = await fetch(`${process.env.REACT_APP_SERVER_URL}/notifications`, {
         credentials: "include",
         mode: "cors"
       })
@@ -143,7 +143,7 @@ function App() {
   useEffect(() => {
 
     const fetchMessages = async() => {
-      const fetchedMessagesData = await fetch("https://localhost:3000/messages", {
+      const fetchedMessagesData = await fetch(`${process.env.REACT_APP_SERVER_URL}/messages`, {
         credentials: "include",
         mode: "cors" 
       })
@@ -230,7 +230,7 @@ function App() {
      let formData = new FormData();
      formData.append("readMessages", readMessages);
      formData.append("friend", friend);
-     fetch("https://localhost:3000/messages/read", {
+     fetch(`${process.env.REACT_APP_SERVER_URL}/messages/read`, {
        credentials: "include",
        method: "post",
        mode: "cors",
@@ -257,7 +257,7 @@ function App() {
     const readMessagesSocket = (friend) => {
       if(friend !== user._id) {
         let newMessages = {...messages};
-        for (let i = newMessages[friend].length; i >= 0; i--) {
+        for (let i = newMessages[friend].length; i > 0; i--) {
           if(newMessages[friend][i-1].from._id === user._id && !newMessages[friend][i-1].read){
             newMessages[friend][i-1].read = true
           } else{break}
@@ -334,8 +334,6 @@ function App() {
           setTyping(newTyping);
         }
       });
-
-      socket.on("")
 
       socket.on("user disconnected", _user => {
         if(activeUsers.includes(_user)) {
