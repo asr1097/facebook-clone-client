@@ -24,6 +24,8 @@ jobs:
 
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@releases/v3
+      env:
+        REACT_APP_SERVER_URL: ${{ secrets.REACT_APP_SERVER_URL }}
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BRANCH: gh-pages
