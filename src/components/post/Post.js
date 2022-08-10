@@ -49,7 +49,7 @@ const Post = () => {
             setCommentsToRender(post.directComments.slice(0, renderLevel * commentsChunk));
         };
 
-        fetchPost();
+        if(!post) {fetchPost()};
 
         return () => {
             setPost();
@@ -57,7 +57,7 @@ const Post = () => {
             setCommentsToRender();
         };
 
-    }, [params.id]);
+    }, [params.id, renderLevel, post]);
 
     useEffect(() => {
         if(post){setCommentsToRender(post.directComments.slice(0, renderLevel * commentsChunk))}

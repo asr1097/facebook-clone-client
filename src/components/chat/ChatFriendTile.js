@@ -37,8 +37,8 @@ const ChatFriendTile = ({ sender, messages, activeUsers }) => {
         return (
             <Link to={`../chat/${senderData._id}`}>
                 {senderData.name.full}
-                 {activeUsers.includes(senderData._id) ? <span>(active) </span> : null}
-                 {unreadMsgs ? unreadMsgs : null}
+                {activeUsers.includes(senderData._id) ? <span>(active) </span> : null}
+                {unreadMsgs ? " " + unreadMsgs : null}
             </Link>
         )
     }

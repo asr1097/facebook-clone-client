@@ -17,7 +17,7 @@ const Notifications = ({ notifs, setNotifsActive }) => {
         return () => {
             setNotifsActive(false)
         }
-    }, []);
+    }, [setNotifsActive]);
 
     useEffect(() => {
         if(notifs){setNotifsToRender(notifs.slice(0, renderLevel * notifsChunk))}
