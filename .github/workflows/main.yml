@@ -5,12 +5,13 @@ on:
     branches:
       - main
 
+env:
+  REACT_APP_SERVER_URL: https://pacific-hamlet-40360.herokuapp.com
+
 jobs:
   build-and-deploy:
 
     runs-on: ubuntu-latest
-
-    environment: "github-pages"
 
     steps:
     
@@ -25,6 +26,6 @@ jobs:
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@v4
       with:
-        REACT_APP_SERVER_URL: ${{ secrets.REACT_APP_SERVER_URL }}
+       
         branch: gh-pages
         folder: build
