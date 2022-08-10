@@ -3,17 +3,15 @@ import { ChatLobby } from "./ChatLobby";
 import { ChatRoom } from "./ChatRoom";
 import { useParams } from "react-router-dom";
 
-const ChatWindow = ({setActiveRoom, activeRoom, readMessages, activeUsers, messages}) => {
+const ChatWindow = ({setActiveRoom, activeRoom, readMessages, activeUsers, messages, typing}) => {
 
     const params = useParams();
 
     useEffect(() => {
-        if(params.id) {
-            setActiveRoom(params.id);
-            readMessages(params.id)
-        }
-        if(!params.id) {setActiveRoom()}
-
+        
+        setActiveRoom(params.id);
+        if(params.id){readMessages(params.id)}
+        
         return () => {
             setActiveRoom();
         }
@@ -28,6 +26,7 @@ const ChatWindow = ({setActiveRoom, activeRoom, readMessages, activeUsers, messa
             {activeRoom ? <ChatRoom  
                 messages={messages[activeRoom]}
                 activeRoom={activeRoom}
+                typing={typing}
                 /> 
             : null}
         </div>

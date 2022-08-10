@@ -20,6 +20,7 @@ const socket = io("https://localhost:3000/", {
 
 const SocketContext = createContext();
 const UserContext = createContext();
+const FriendsContext = createContext();
 
 function App() {
 
@@ -35,59 +36,38 @@ function App() {
   const [messages, setMessages] = useState({});
   const [activeRoom, setActiveRoom] = useState();
   const [unreadMsgsGlobal, setUnreadMsgsGlobal] = useState();
+  const [typing, setTyping] = useState([]);
 
   const [notifications, setNotifications] = useState([]);
   const [notifsActive, setNotifsActive] = useState(false);
   const [unreadNotifsCount, setUnreadNotifsCount] = useState();
 
-  const readMessages = useCallback((friend, msgArray=[]) => {
-     /* 
-      If the chatroom is already active when message from friend is received,
-      "msgArray" is passed from socketIO event handler so the received message
-      will be marked as "read" imediately.
-    */
-    let readMessages = [];
-    if(msgArray.length){readMessages.push(msgArray[0]._id)}
-    
-    if(!msgArray.length && Object.keys(messages).length){
-      /* 
-        When the chatroom is opened, loop messages from the last one 
-        and check if it's been read - if not, push it to the "readMessages".
-        When first read message is reached, break from the loop.
-      */
-      for(let i = messages[friend].length - 1; i >= 0; i--) {
-        if(messages[friend][i].from._id === friend && !messages[friend][i].read){
-          readMessages.push(messages[friend][i]._id)
-        }
-        else if(messages[friend][i].from._id === friend && messages[friend][i].read){
-          break;
-        }
-      };
-    }
-    if(readMessages.length) {
-      let formData = new FormData();
-      formData.append("readMessages", readMessages);
-      formData.append("friend", friend);
-      fetch("https://localhost:3000/messages/read", {
+  /* Check if user is logged in by checking cookies */
+  useEffect(() => {
+    let cookies = document.cookie.split(";");
+    cookies.forEach(cookie => {
+      let regex = new RegExp("loggedIn*");
+      cookie.match(regex) ? setloggedIn(true): setloggedIn()
+    })
+  }, [])
+
+  /* Fetch user data */
+  useEffect(() => {
+    const fetchUser = async() => {
+      const fetchedUserData = await fetch("https://localhost:3000/profile/loggedUser", {
         credentials: "include",
-        method: "post",
-        mode: "cors",
-        body: formData
-      }).then(res => {
-        if(res.ok) {
-          let newMessages = {...messages};
-          if(msgArray.length){newMessages[friend] = [...newMessages[friend], msgArray[0]]}
-          else {
-            for(let i = newMessages[friend].length - 1; i >= 0; i--){
-              if(newMessages[friend][i].read) {break}
-              newMessages[friend][i].read = true;
-            }
-          }
-          setMessages(newMessages);
-        }
+        mode: "cors"  
       })
-    } else {return 0};
-  }, [messages]);
+      const fetchedUser = await fetchedUserData.json()
+      setUser(fetchedUser.user);
+      setSocketID(fetchedUser.user._id);
+      setFriends(fetchedUser.populatedFL.friendsList);
+      setReceivedFriendRequests(fetchedUser.populatedFL.receivedRequests)
+    };
+
+    if(!user && !socketID && loggedIn) {fetchUser();}
+
+  }, [loggedIn, user, socketID]);
 
   /* Fetch read notifications when "Notifications" component is active */
   useEffect(() => {
@@ -159,15 +139,6 @@ function App() {
       setUnreadNotifsCount(unreadNotifs);
     }, [notifications])
 
-  /* Check if user is logged in by checking cookies */
-  useEffect(() => {
-    let cookies = document.cookie.split(";");
-    cookies.forEach(cookie => {
-      let regex = new RegExp("loggedIn*");
-      cookie.match(regex) ? setloggedIn(true): setloggedIn()
-    })
-  }, [])
-
   /* Fetch messages */
   useEffect(() => {
 
@@ -212,24 +183,6 @@ function App() {
 
   }, [messages]);
 
-  /* Fetch user data */
-  useEffect(() => {
-    const fetchUser = async() => {
-      const fetchedUserData = await fetch("https://localhost:3000/profile/loggedUser", {
-        credentials: "include",
-        mode: "cors"  
-      })
-      const fetchedUser = await fetchedUserData.json()
-      setUser(fetchedUser.user);
-      setSocketID(fetchedUser.user._id);
-      setFriends(fetchedUser.populatedFL.friendsList);
-      setReceivedFriendRequests(fetchedUser.populatedFL.receivedRequests)
-    };
-
-    if(!user && !socketID && loggedIn) {fetchUser();}
-
-  }, [loggedIn, user, socketID]);
-
   /* Received friend request counter for NavBar */
   useEffect(() => {
     if(receivedFriendRequests){
@@ -237,17 +190,80 @@ function App() {
     }
   }, [receivedFriendRequests]);
 
+  /* 
+    If 2 users haven't chatted before, create empty array in "messages"
+    for according friend based on "activeRoom"
+  */
+  useEffect(() => {
+    if(activeRoom && !messages[activeRoom]) {
+      setMessages({...messages, [activeRoom]: []})
+    }
+  }, [activeRoom, messages]);
+
+  const readMessages = useCallback((friend, msgArray=[]) => {
+    /* 
+     If the chatroom is already active when message from friend is received,
+     "msgArray" is passed from socketIO event handler so the received message
+     will be marked as "read" imediately.
+   */
+   let readMessages = [];
+   if(msgArray.length){readMessages.push(msgArray[0]._id)}
+   
+   if(user) {
+     if(!msgArray.length && Object.keys(messages).length && friend !== user._id){
+       /* 
+         When the chatroom is opened, loop messages from the last one 
+         and check if it's been read - if not, push it to the "readMessages".
+         When first read message is reached, break from the loop.
+       */
+       for(let i = messages[friend].length - 1; i >= 0; i--) {
+         if(messages[friend][i].from._id === friend && !messages[friend][i].read){
+           readMessages.push(messages[friend][i]._id)
+         }
+         else if(messages[friend][i].from._id === friend && messages[friend][i].read){
+           break;
+         }
+       };
+     }
+   }
+   if(readMessages.length) {
+     let formData = new FormData();
+     formData.append("readMessages", readMessages);
+     formData.append("friend", friend);
+     fetch("https://localhost:3000/messages/read", {
+       credentials: "include",
+       method: "post",
+       mode: "cors",
+       body: formData
+     }).then(res => {
+       if(res.ok) {
+         let newMessages = {...messages};
+         if(msgArray.length){newMessages[friend] = [...newMessages[friend], msgArray[0]]}
+         else {
+           for(let i = newMessages[friend].length - 1; i >= 0; i--){
+             if(newMessages[friend][i].read) {break}
+             newMessages[friend][i].read = true;
+           }
+         }
+         setMessages(newMessages);
+       }
+     })
+   } else {return 0};
+ }, [messages, user]);
+
   /* SocketIO events handlers */
   useEffect(() => {
 
     const readMessagesSocket = (friend) => {
-      let newMessages = {...messages};
-      for (let i = newMessages[friend].length; i >= 0; i--) {
-        if(newMessages[friend][i-1].from._id === user._id && !newMessages[friend][i-1].read){
-          newMessages[friend][i-1].read = true
-        } else{break}
+      if(friend !== user._id) {
+        let newMessages = {...messages};
+        for (let i = newMessages[friend].length; i >= 0; i--) {
+          if(newMessages[friend][i-1].from._id === user._id && !newMessages[friend][i-1].read){
+            newMessages[friend][i-1].read = true
+          } else{break}
+        }
+        setMessages(newMessages)
       }
-      setMessages(newMessages)
     }
 
     const onNotification = (notif) => {
@@ -305,6 +321,22 @@ function App() {
 
       socket.on("new notification", onNotification);
 
+      socket.on("typing", friend => {
+        if(!typing.includes(friend)) {
+          setTyping([...typing, friend])
+        }
+      });
+
+      socket.on("stopped typing", friend => {
+        if(typing.includes(friend)) {
+          let newTyping = [...typing];
+          newTyping.splice(newTyping.indexOf(friend), 1);
+          setTyping(newTyping);
+        }
+      });
+
+      socket.on("")
+
       socket.on("user disconnected", _user => {
         if(activeUsers.includes(_user)) {
           let newActiveUsers = [];
@@ -322,6 +354,8 @@ function App() {
       socket.off("new connection");
       socket.off("new message");
       socket.off("message read");
+      socket.off("typing");
+      socket.off("stopped typing");
       socket.off("user disconnected");
       socket.off("new notification");
     }
@@ -335,6 +369,7 @@ function App() {
       notifsActive,
       user,
       messages,
+      typing,
       readMessages
     ]);
 
@@ -351,6 +386,7 @@ function App() {
       />
       <UserContext.Provider value={user}>
       <SocketContext.Provider value={socket}>
+      <FriendsContext.Provider value={friends}>
         <Routes>
           <Route path="/" 
             element={<IndexPage 
@@ -372,6 +408,7 @@ function App() {
               messages={messages}
               readMessages={readMessages}
               activeRoom={activeRoom}
+              typing={typing}
               setActiveRoom={setActiveRoom}
               />} 
           />
@@ -381,6 +418,7 @@ function App() {
               activeUsers={activeUsers}
               messages={messages}
               readMessages={readMessages}
+              typing={typing}
               activeRoom={activeRoom}
               setActiveRoom={setActiveRoom}
               />}
@@ -417,10 +455,11 @@ function App() {
             element={<Photos />}
           />
         </Routes>
+      </FriendsContext.Provider>
       </SocketContext.Provider>
       </UserContext.Provider>
     </div>
   );
 }
 
-export { App, SocketContext, UserContext };
+export { App, SocketContext, UserContext, FriendsContext };
