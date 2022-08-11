@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/facebook-clone-client/static/css/main.e486672f.css",
-    "main.js": "/facebook-clone-client/static/js/main.a1b71d64.js",
+    "main.js": "/facebook-clone-client/static/js/main.dbd2dbf8.js",
     "index.html": "/facebook-clone-client/index.html",
     "main.e486672f.css.map": "/facebook-clone-client/static/css/main.e486672f.css.map",
-    "main.a1b71d64.js.map": "/facebook-clone-client/static/js/main.a1b71d64.js.map"
+    "main.dbd2dbf8.js.map": "/facebook-clone-client/static/js/main.dbd2dbf8.js.map"
   },
   "entrypoints": [
     "static/css/main.e486672f.css",
-    "static/js/main.a1b71d64.js"
+    "static/js/main.dbd2dbf8.js"
   ]
 }
